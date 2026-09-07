@@ -1,14 +1,10 @@
 name: vllm-ray-worker
 
-# Must match the official vLLM v0.28.0 head runtime exactly.
+# eugr DGX-Spark optimized vLLM nightly (B12X build), same image as the head.
+# Prebuilt image includes Ray 2.58.0 (worker joins the head's Ray cluster).
 services:
   ray-worker:
-    # Must be built from the same Dockerfile and pinned official vLLM parent
-    # as the head; it adds the Ray worker executable.
-    image: vllm-openai-ray:v0.28.0-ray2.58.0
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: eugr/spark-vllm-b12x:latest
     container_name: deepseek-v4-ray-worker
     restart: unless-stopped
     network_mode: host
