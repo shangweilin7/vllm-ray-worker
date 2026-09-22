@@ -1,14 +1,12 @@
 name: vllm-ray-worker
 
-# Must match the official vLLM v0.28.0 head runtime exactly.
+# Must match the B12X head runtime exactly: Ray serializes Python objects
+# between nodes, so sharing only the Ray version is insufficient.
 services:
   ray-worker:
-    # Must be built from the same Dockerfile and pinned official vLLM parent
-    # as the head; it adds the Ray worker executable.
-    image: vllm-openai-ray:v0.28.0-ray2.58.0
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # Same immutable image digest as vllm-ray-head. Do not build the legacy
+    # vLLM 0.28 image here: its huggingface_hub ABI is incompatible with head.
+    image: eugr/spark-vllm-b12x:latest
     container_name: deepseek-v4-ray-worker
     restart: unless-stopped
     network_mode: host
