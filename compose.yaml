@@ -36,6 +36,9 @@ services:
       CUTE_DSL_ARCH: sm_121a
       RAY_ADDRESS: ${HEAD_IP}:6379
       RAY_memory_monitor_refresh_ms: "0"
+      # Fail fast when the head GCS goes away (default 60s) so the container
+      # restarts and rejoins the new head session sooner.
+      RAY_gcs_rpc_server_reconnect_timeout_s: "10"
       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
     volumes:
       - ${HOST_HOME:?Set HOST_HOME to this host's home directory}/.cache/huggingface:/root/.cache/huggingface
