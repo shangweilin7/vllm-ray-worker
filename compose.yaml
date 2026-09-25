@@ -31,6 +31,9 @@ services:
       GLOO_SOCKET_IFNAME: ${ROCE_IFACE:?Set ROCE_IFACE to the RoCE NIC name}
       VLLM_HOST_IP: ${NODE_IP}
       # B12X head runs TP=2/PP=1; do not inject legacy PP partitions.
+      # Not a VLLM_* var, so vLLM does not forward it from the head driver to
+      # Ray actors. Must match head: it is part of the b12x compile cache key.
+      CUTE_DSL_ARCH: sm_121a
       RAY_ADDRESS: ${HEAD_IP}:6379
       RAY_memory_monitor_refresh_ms: "0"
       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
