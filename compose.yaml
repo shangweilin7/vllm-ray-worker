@@ -31,14 +31,27 @@ services:
       GLOO_SOCKET_IFNAME: ${ROCE_IFACE:?Set ROCE_IFACE to the RoCE NIC name}
       VLLM_HOST_IP: ${NODE_IP}
       # B12X head runs TP=2/PP=1; do not inject legacy PP partitions.
+      # Not a VLLM_* var, so vLLM does not forward it from the head driver to
+      # Ray actors. Must match head: it is part of the b12x compile cache key.
+      CUTE_DSL_ARCH: sm_121a
       RAY_ADDRESS: ${HEAD_IP}:6379
       RAY_memory_monitor_refresh_ms: "0"
+      # Fail fast when the head GCS goes away (default 60s) so the container
+      # restarts and rejoins the new head session sooner.
+      RAY_gcs_rpc_server_reconnect_timeout_s: "10"
       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
     volumes:
       - ${HOST_HOME:?Set HOST_HOME to this host's home directory}/.cache/huggingface:/root/.cache/huggingface
       # vLLM runtime cache lives inside this repo dir (gitignored, ./vllm-cache),
       # so the cache travels with the project and no longer sits in $HOME.
       - ./vllm-cache:/root/.cache/vllm
+      # JIT/autotune caches must survive container recreation; otherwise
+      # b12x/Triton/TileLang recompile on every recreate (~7-10 min startup).
+      - ./compile-cache/b12x:/root/.cache/b12x
+      - ./compile-cache/triton:/root/.triton
+      - ./compile-cache/tilelang:/root/.tilelang
+      - ./compile-cache/torch_extensions:/root/.cache/torch_extensions
+      - ./compile-cache/flashinfer:/root/.cache/flashinfer
     entrypoint: ["ray"]
     command:
       - start
